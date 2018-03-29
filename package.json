@@ -1,5 +1,5 @@
 {
-  "name": "monitor",
+  "name": "react-monitor",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

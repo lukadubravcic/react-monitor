@@ -16,6 +16,9 @@ class DataController extends React.Component {
         socket.on("FromAPI", data => {
             this.setState({ data });
         });
+        socket.on("disconnect", () => {
+            console.log('disconnect');
+        });
     }
 
     render() {

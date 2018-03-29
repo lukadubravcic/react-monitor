@@ -5,7 +5,7 @@ class App extends Component {
   render() {
     return (
       <div>
-        <h1>Data</h1>
+        <h1>CPU/MEM Usage</h1>
         <DataController />
       </div>
     );
