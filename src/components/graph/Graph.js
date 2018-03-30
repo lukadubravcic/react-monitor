@@ -64,6 +64,8 @@ class Graph extends React.Component {
         this.canvasCtx.rect(0, this.canvasHeight - 25, canvasTextWidth, this.canvasHeight);
         this.canvasCtx.stroke();
 
+        let labelCoordinates = getLabelCoordinates(this.canvasHeight, this.graphLabels, rowHeight);
+
         for (let i = 0; i < this.graphLabels.length; i++) {
             this.canvasCtx.font = labelFontSize + "px Arial";
             let labelCoords = getLabelCoords(this.canvasHeight, rowHeight, i);
@@ -79,6 +81,7 @@ class Graph extends React.Component {
 
     drawGrid() {
         const rowHeight = ((this.canvas.height - 2 * topBotCanvasPadding) / this.graphLabels.length);
+
         for (let i = 0; i < this.graphLabels.length; i++) {
             let coords = getLabelCoords(this.canvasHeight, rowHeight, i);
             this.canvasCtx.lineWidth = 1;
@@ -170,10 +173,18 @@ function getYCoord(canvasHeight, value) {
 function getLabelCoords(canvasHeight, rowHeight, labelIndex) {
     // vraca x,y coord labela
     let x = 0.3 * canvasTextWidth;
-    let y = canvasHeight - (((labelIndex + 1) * (rowHeight))) + labelFontSize + 29; 
+    let y = canvasHeight - (((labelIndex + 1) * (rowHeight))) + labelFontSize + 29;
 
     return {
         x,
         y
     }
+}
+
+
+
+function getLabelCoordinates(canvasHeight, graphLabels, rowHeight) {
+    // pronadi koords za svaku labelu u labelarrayu
+    console.log(rowHeight)
+
 }
