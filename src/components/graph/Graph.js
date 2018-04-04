@@ -7,16 +7,18 @@ const graphLineColors = {
 }
 
 const topBotCanvasPadding = 25;
-const canvasTextWidth = 30;
+const canvasTextWidth = 50;
 const labelFontSize = 12;
+
+const graphBorderSize = 1;
 
 
 class Graph extends React.Component {
     constructor(props) {
         super(props);
-        this.arrayLen = 25;
+        this.arrayLen = 10;
         this.canvas = null;
-        this.canvasHeight = 300;
+        this.canvasHeight = 250;
         this.canvasWidth = getCanvasWidth();
         this.canvasCtx = null;
         this.state = {};
@@ -24,7 +26,9 @@ class Graph extends React.Component {
         this.drawLine = this.drawLine.bind(this);
         this.updateCanvas = this.updateCanvas.bind(this);
         this.drawGraphLabels = this.drawGraphLabels.bind(this);
-        this.drawGrid = this.drawGrid.bind(this);
+        this.drawBoardFrame = this.drawBoardFrame.bind(this);
+
+        this.labelCoordinates = null;
 
         this.graphLabels = [
             '    0%',
@@ -39,65 +43,45 @@ class Graph extends React.Component {
 
     drawLine(nodeIndex, val1, val2, propName) {
         // dobiti x poziciju
-        let x1 = Math.floor((this.canvasWidth / this.arrayLen) * nodeIndex) + canvasTextWidth;
+        let x1 = Math.floor((this.canvasWidth / (this.arrayLen - 1)) * (nodeIndex - 1)) + canvasTextWidth;
         let y1 = getYCoord(this.canvasHeight, val1);
-        let x2 = Math.floor((this.canvasWidth / this.arrayLen) * (nodeIndex + 1)) + canvasTextWidth;
+        let x2 = Math.floor((this.canvasWidth / (this.arrayLen - 1)) * (nodeIndex)) + canvasTextWidth;
         let y2 = getYCoord(this.canvasHeight, val2);
 
-        this.canvasCtx.lineWidth = 3;
+        this.canvasCtx.lineWidth = 2;
+        this.canvasCtx.strokeStyle = graphLineColors[propName];
         this.canvasCtx.lineJoin = "round";
         this.canvasCtx.beginPath();
         this.canvasCtx.moveTo(x1, y1);
         this.canvasCtx.lineTo(x2, y2);
-        this.canvasCtx.strokeStyle = graphLineColors[propName];
         this.canvasCtx.stroke();
     }
 
     drawGraphLabels() {
-        const labelSpaceSize = this.canvasHeight - (2 * topBotCanvasPadding);
-        const rowHeight = (labelSpaceSize / (this.graphLabels.length - 1));
-
-        this.canvasCtx.fillStyle = "silver";
-        this.canvasCtx.fillRect(0, 0, canvasTextWidth + 25, this.canvasHeight);
-
-        this.canvasCtx.rect(0, 0, canvasTextWidth, 25);
-        this.canvasCtx.rect(0, this.canvasHeight - 25, canvasTextWidth, this.canvasHeight);
-        this.canvasCtx.stroke();
-
-        let labelCoordinates = getLabelCoordinates(this.canvasHeight, this.graphLabels, rowHeight);
+        let labelCoordinates = getLabelYCoordinates(this.canvasHeight, this.graphLabels);
+        let labelLinesCoordinates = getLabelLinesYCoordinates(this.canvasHeight, this.graphLabels);
 
         for (let i = 0; i < this.graphLabels.length; i++) {
             this.canvasCtx.font = labelFontSize + "px Arial";
-            let labelCoords = getLabelCoords(this.canvasHeight, rowHeight, i);
-
-            this.canvasCtx.rect(labelCoords.x, labelCoords.y, canvasTextWidth, rowHeight);
-            this.canvasCtx.stroke();
-
             this.canvasCtx.fillStyle = "black";
-            this.canvasCtx.fillText(this.graphLabels[i], labelCoords.x, labelCoords.y);
-        }
-        this.labelsDrawn = true;
-    }
+            this.canvasCtx.fillText(this.graphLabels[i], 0.3 * canvasTextWidth, labelCoordinates[i]);
 
-    drawGrid() {
-        const rowHeight = ((this.canvas.height - 2 * topBotCanvasPadding) / this.graphLabels.length);
-
-        for (let i = 0; i < this.graphLabels.length; i++) {
-            let coords = getLabelCoords(this.canvasHeight, rowHeight, i);
-            this.canvasCtx.lineWidth = 1;
+            this.canvasCtx.lineWidth = 2;
+            this.canvasCtx.strokeStyle = graphLineColors[propName];
+            this.canvasCtx.lineJoin = "round";
             this.canvasCtx.beginPath();
-            this.canvasCtx.moveTo(canvasTextWidth, coords.y);
-            this.canvasCtx.lineTo(this.canvasWidth, coords.y);
-            this.canvasCtx.strokeStyle = "silver"
+            this.canvasCtx.moveTo(x1, y1);
+            this.canvasCtx.lineTo(x2, y2);
             this.canvasCtx.stroke();
         }
+
+        this.labelsDrawn = true;
     }
 
     updateCanvas() {
         if (!this.canvasCtx) return;
         // clear
-        this.canvasCtx.clearRect(canvasTextWidth + 15, 0, this.canvasWidth, this.canvasHeight)
-        this.drawGrid();
+        this.canvasCtx.clearRect(canvasTextWidth, 0, this.canvasWidth, this.canvasHeight);
 
         for (let prop in this.state) {
             if (this.state[prop].length >= 2) {
@@ -107,6 +91,14 @@ class Graph extends React.Component {
                 }
             }
         }
+        this.drawBoardFrame();
+    }
+
+    drawBoardFrame() {
+        this.canvasCtx.rect(canvasTextWidth - graphBorderSize, 0 + graphBorderSize, this.canvasWidth - canvasTextWidth, this.canvasHeight - graphBorderSize);
+        this.canvasCtx.strokeStyle = 'green';
+        this.canvasCtx.lineWidth = graphBorderSize;
+        this.canvasCtx.stroke();
     }
 
     componentDidMount() {
@@ -139,7 +131,6 @@ class Graph extends React.Component {
             <div>
                 <div style={{ textAlign: "center" }}>
                     <canvas
-                        style={{ border: "1px solid silver" }}
                         ref={elem => this.canvas = elem}
                         width={this.canvasWidth}
                         height={this.canvasHeight}
@@ -155,7 +146,7 @@ export default Graph;
 
 
 function getCanvasWidth() {
-    return 0.6 * window.innerWidth;
+    return 0.7 * window.innerWidth;
 }
 
 function getNodeIndex(currLen, maxLen, index) {
@@ -166,25 +157,36 @@ function getNodeIndex(currLen, maxLen, index) {
 
 function getYCoord(canvasHeight, value) {
     // posto canvasov koordinatni sustav koristi cetvrti kvadrant kartezijevog
-    const paddedCanvasHeight = canvasHeight - (topBotCanvasPadding * 2);
+    const paddedCanvasHeight = canvasHeight - (2 * topBotCanvasPadding);
     return canvasHeight - (Math.floor((value / 100) * paddedCanvasHeight)) - topBotCanvasPadding;
 }
 
-function getLabelCoords(canvasHeight, rowHeight, labelIndex) {
-    // vraca x,y coord labela
-    let x = 0.3 * canvasTextWidth;
-    let y = canvasHeight - (((labelIndex + 1) * (rowHeight))) + labelFontSize + 29;
+function getLabelYCoordinates(canvasHeight, graphLabels) {
+    let numOfLabels = graphLabels.length;
+    let coords = [];
+    let canvasAvailableHeight = canvasHeight - 2 * topBotCanvasPadding;
+    let percentPerLabel = 1 / (numOfLabels - 1);
 
-    return {
-        x,
-        y
+    for (let i = graphLabels.length; i > 0; i--) {
+        coords.push(
+            (((i - 1) * percentPerLabel) * canvasAvailableHeight) + topBotCanvasPadding + (labelFontSize / 3)
+        );
     }
+
+    return coords;
 }
 
+function getLabelLinesYCoordinates(canvasHeight, graphLabels) {
+    let numOfLabels = graphLabels.length;
+    let coords = [];
+    let canvasAvailableHeight = canvasHeight - 2 * topBotCanvasPadding;
+    let percentPerLabel = 1 / (numOfLabels - 1);
 
+    for (let i = graphLabels.length; i > 0; i--) {
+        coords.push(
+            (((i - 1) * percentPerLabel) * canvasAvailableHeight) + topBotCanvasPadding
+        );
+    }
 
-function getLabelCoordinates(canvasHeight, graphLabels, rowHeight) {
-    // pronadi koords za svaku labelu u labelarrayu
-    console.log(rowHeight)
-
+    return coords;
 }

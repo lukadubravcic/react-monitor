@@ -23,7 +23,17 @@ class DataController extends React.Component {
 
     render() {
         return (
-            <Graph data={this.state.data} />
+            <div>
+                <button
+                    onClick={this.stopReceiving}>
+                    START
+                </button>
+                <button
+                    onClick={this.stopReceiving} >
+                    STOP
+                </button>
+                <Graph data={this.state.data} />
+            </div>
         );
     }
 }
